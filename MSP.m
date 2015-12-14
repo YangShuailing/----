@@ -1,13 +1,13 @@
-function  Est_Normal = MSP_EDSNL(Num_Achohor,Num_Target,scan_time,anchor_node,X_rank,cita,p_band,normal_node)
+function  Est_Normal = MSP(Num_Achohor,Num_Target,scan_time,anchor_node,X_rank,cita,p_band,normal_node)
 %%% input:normal_node  for plot!
-plotflag=0;
 debug=1;
 PB_anchor=p_band;
 
 Size_Grid = 10;
 Length = Size_Grid;
 Width = Size_Grid;
-Scale=2;%网格点放大尺度
+Scale = 2;%网格点放大尺度
+
 %区域起点与终点坐标
 LENGTH_S = 0;
 WIDTH_S = 0;
@@ -56,10 +56,7 @@ disp('Step1: Del point using anchor:');
 disp('******************************************')
 [box_after_anchor]= del_point_using_anchor(box,X_rank,Num_Achohor,Num_Target,scan_time,anchor_node,cita,PB_anchor,normal_node);  
   
-if plotflag==1
-plot_box(box_after_anchor,Num_Target,Num_Achohor,anchor_node,normal_node);
-end
-
+ 
 for k=1:Num_Target
 count_after_anchor(k)=box_after_anchor(k).count;
 end

@@ -3,8 +3,8 @@ clc;
 clear all  %清除 
 close all; %关闭之前数据
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
-load('Ini_Data.mat') ;   
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+load('Ini_Data.mat') ;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
 Acoustic_Loc = fix(Size_Grid*abs((rand(Acoustic_Number,2))));%声源位置已知，目前声源随机产生，可以更改为节点上speaker的坐标（手机上speaker位置还没确定）。
 % %%% 画声源节点
 %  plot(Acoustic_Loc(:,1),Acoustic_Loc(:,2),'k*');
@@ -16,9 +16,8 @@ for runs = 1:RUNS
         disp(['---------- ']);        
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%生成麦克风位置朝向信息
-   
     Microphone_Cita=fix(-90+180*(rand(Node_All,1)));  %%朝向 [-90  90]    
-    Microphone_Center_Location=fix(Size_Grid*abs(rand(Node_All,2))); % 中心 位置
+    Microphone_Center_Location=fix(Size_Grid*abs((rand(Node_All,2)))); % 中心 位置
     Microphone_1_Location=zeros(Node_All,2); % 顶部 位置
     Microphone_2_Location=zeros(Node_All,2); % 底部 位置
     for  i=1:Node_All

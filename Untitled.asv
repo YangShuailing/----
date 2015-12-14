@@ -1,0 +1,185 @@
+% main function
+clc;
+clear all  %清除 
+close all; %关闭之前数据
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+%% 初始化数据
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+Size_Grid=10;  %房间大小，单位：m 
+Room_Size = [Size_Grid Size_Grid];
+Microphone_Distance = 0.5; %手机上两个mic之间距离 （m)
+r = Microphone_Distance/2;
+Point_Step = 0.1;% 空间粒度
+Node_Number =10; %节点个数
+Anchor_Number = 3; % 锚节点个数
+Scale=1;%网格点放大尺度
+p_band=0.01;%%MSP：不考虑保护带
+min_bound= 0.1;  %% FOR lp %%%%%% have effect on the result!!!
+max_bound = 10;
+Node_All = Anchor_Number + Node_Number; % 普通节点 + 锚节点 
+RUNS = 1; %%仿真次数
+Acoustic_Number = 20; % 声源的个数
+Scan_Time = Acoustic_Number; %%扫描次数
+cita=fix(-90+180*(rand(1,Acoustic_Number)));  %%朝向 [-90  90]  %%% 精度和声源个数有关系
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
+ Acoustic_Loc = fix(Size_Grid*abs((rand(Acoustic_Number,2))));%声源位置已知，目前声源随机产生，可以更改为节点上speaker的坐标。
+% %%% 画声源节点
+%  plot(Acoustic_Loc(:,1),Acoustic_Loc(:,2),'k*');
+%  hold on;
+for runs = 1:RUNS 
+        disp(['runs = ',num2str(runs)]);
+        disp(['---------- ']);
+        count =0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%生成麦克风位置朝向信息
+    Microphone_Cita=fix(-90+180*(rand(Node_All,1)));  %%朝向 [-90  90]    
+    Microphone_Center_Location=fix(Size_Grid*abs((rand(Node_All,2)))); % 中心 位置
+    Microphone_1_Location=zeros(Node_All,2); % 顶部 位置
+    Microphone_2_Location=zeros(Node_All,2); % 底部 位置
+    for  i=1:Node_All
+        %%(L/2,0)
+        Microphone_1_Location(i,1)=Microphone_Center_Location(i,1) + 0.5*Microphone_Distance*(cos(Microphone_Cita(i)*pi/180));
+        Microphone_1_Location(i,2)=Microphone_Center_Location(i,2) + 0.5*Microphone_Distance*(-sin(Microphone_Cita(i)*pi/180));  
+         %%(-L/2,0)
+        Microphone_2_Location(i,1)=Microphone_Center_Location(i,1) - 0.5*Microphone_Distance*(cos(Microphone_Cita(i)*pi/180));
+        Microphone_2_Location(i,2)=Microphone_Center_Location(i,2) - 0.5*Microphone_Distance*(-sin(Microphone_Cita(i)*pi/180));        
+    end
+
+% % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%% 画出节点位置
+% disp('Microphone1: ');
+% disp(Microphone_1_Location);
+% disp('**********************************************');
+% disp('Microphone2: ');
+% disp(Microphone_2_Location);
+% disp('**********************************************');
+% % figure('Position',[1 1 900 900])
+% plot(Microphone_1_Location(1:3,1),Microphone_1_Location(1:3,2),'r.',Microphone_2_Location(1:3,1),Microphone_2_Location(1:3,2),'b.',Microphone_Center_Location(1:3,1),Microphone_Center_Location(1:3,2),'k.');
+% hold on;
+% for i = 1:3
+% text(Microphone_Center_Location(i,1)+0.3,Microphone_Center_Location(i,2)+0.3,cellstr(num2str(i)));
+% end
+% plot(Microphone_1_Location(4:Node_All,1),Microphone_1_Location(4:Node_All,2),'r.',Microphone_2_Location(4:Node_All,1),Microphone_2_Location(4:Node_All,2),'b.',Microphone_Center_Location(4:Node_All,1),Microphone_Center_Location(4:Node_All,2),'k.');
+% axis([-1 Size_Grid+1 -1 Size_Grid+1]) ;
+% hold on;
+% % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    Xnode_All=Microphone_Center_Location; % 节点中心坐标
+    Node_Location =[Microphone_1_Location Microphone_2_Location]; %% 33*4
+    Xanchor=Xnode_All(1:Anchor_Number,:);  % 锚节点坐标
+    Xnode=Xnode_All(Anchor_Number+1:Node_All,:); % 普通节点坐标
+    S=[-sin(cita*pi/180);cos(cita*pi/180)];  
+    X_new=Xnode_All*S;    
+    [Xa,X_rank]=sort(X_new,1);  
+ 
+    xxest_msp= MSP_EDSNL(Anchor_Number,Node_Number,Scan_Time,Xanchor,X_rank,cita,p_band,Xnode_All) ;
+     plot_fig_msp(Xnode,xxest_msp,Xanchor,Node_Number,Anchor_Number,Size_Grid); 
+  rmse_msp_tmp(count)  = sqrt( sum((xxest_msp(:)-normal_node(:)).^2) / Node_Number );  %
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%% 朝向信息     
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+angle = zeros(Node_All,1);    
+for i =1:Node_All 
+    
+    flag=ones(Room_Size(1,1)/Point_Step+1,Room_Size(1,2)/Point_Step+1);%标记
+    for j = 1 : Acoustic_Number  
+        
+        %%%第 i 个节点的中心点坐标
+        x0 =  Xnode_All(i,1);
+        y0  = Xnode_All(i,2);
+        X0 = [x0 y0];
+        %%% 第 i 个节点的两个麦克风坐标
+        x1 =  Node_Location(i,1);
+        y1  = Node_Location(i,2);
+        X1 = [x1 y1];
+        x2 =  Node_Location(i,3);
+        y2  = Node_Location(i,4);
+        X2 = [x2 y2];
+%%%%%%%%%%%%%%%%%%%
+        %方向矢量Mic_vector
+        Mic_vector=Acoustic_Loc(j,:)-Xnode_All(i,:);
+        %%%已知方向矢量Direct_vector=[a,b]与中心位置(x0,y0)Microphone_Center_Location，
+        %%%计算垂直平分线a(x-x0)+b(y-y0)=0  
+        a=Mic_vector(1,1);
+        b=Mic_vector(1,2);
+        aa=-a/b; %%%% 中垂线斜率
+        bb=(a*x0+b*y0)/b;  %%%截距        
+        %%%  画出中垂线
+        xx=0:10;
+        yy=aa*xx+bb;
+        plot(xx,yy,'color','black','Linewidth',1);
+        hold on; 
+%   %%直线方程yy=aa*xx+bb;     
+%   %%f = y1 - aa*x1 - bb;
+    lin = [1 -aa -bb];  %% 直线方程  
+      f =  fun_flag(X1,lin);%直线函数  
+        for temp_x=1:Room_Size(1,1)/Point_Step+1
+                for temp_y=1:Room_Size(1,2)/Point_Step+1
+                      Xtemp = [(temp_x-1)*Point_Step (temp_y-1)*Point_Step];  
+                      X_temp = [temp_x temp_y];
+                      f_temp = fun_flag(Xtemp,lin);%直线函数  
+                    if f * f_temp < 0  
+                        flag(temp_x,temp_y) = 0;
+                        
+                    end
+                  
+                    
+                end
+        end  
+
+    end
+    
+    sum_x=0;
+    sum_y=0;
+    totalcounnt=0;
+    for temp_x=1:Room_Size(1,1)/Point_Step+1
+        for temp_y=1:Room_Size(1,2)/Point_Step+1
+            if flag(temp_x,temp_y)==1
+                sum_x=sum_x+(temp_x-1)*Point_Step;
+                sum_y=sum_y+(temp_y-1)*Point_Step;
+                totalcounnt=totalcounnt+1;
+                %%画出切割区域                 
+                plot((temp_x-1)*Point_Step,(temp_y-1)*Point_Step,'b.-');
+                hold on;
+              
+            end
+        end
+    end
+        estimated_location=[sum_x/totalcounnt sum_y/totalcounnt];  
+        
+        k = (estimated_location(1,2) - y0)/(estimated_location(1,1) - x0);
+       angle(i)=-rad2deg(atan(k));
+       
+%         %%% 画出区域中心点
+%         plot(estimated_location(1,1),estimated_location(1,2),'ro');
+%         axis([-1 11 -1 11]);
+%         hold on ;
+  
+end
+angle
+Microphone_Cita
+
+
+rmse_angle_tmp(count)  = sqrt( sum((xxest_msp(:)-normal_node(:)).^2) / Node_Number );  %
+debug=0 ;
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%% 画出定位结果
+
+% figure('Position',[1 1 900 900])
+% plot(Microphone_1_Location(1:3,1),Microphone_1_Location(1:3,2),'ko',Microphone_2_Location(1:3,1),Microphone_2_Location(1:3,2),'ko',Microphone_Center_Location(1:3,1),Microphone_Center_Location(1:3,2),'k*');
+% hold on;
+% plot(Microphone_1_Location(4:Node_Number,1),Microphone_1_Location(4:Node_Number,2),'b.',Microphone_2_Location(4:Node_Number,1),Microphone_2_Location(4:Node_Number,2),'b.',Microphone_Center_Location(4:Node_Number,1),Microphone_Center_Location(4:Node_Number,2),'b*');
+% axis([0 Size_Grid 0 Size_Grid]) ;
+% hold on;
+% plot( Est_Microphone_1_Location(1:Node_Number,1), Est_Microphone_1_Location(1:Node_Number,2),'r.', Est_Microphone_2_Location(1:Node_Number,1), Est_Microphone_2_Location(1:Node_Number,2),'r.',est_lp(1:Node_Number,1),est_lp(1:Node_Number,2),'r*');
+% axis([0 Size_Grid 0 Size_Grid]) ;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   count=count+1;
+end
+ 
+ 
+
+% rmse_LP_Anchors_MC=mean(rmse_LP_final_Anchors);
+% save scans_LP_result.mat  RUNS Scale Size_Grid Node_Number Anchor_Number  rmse_LP_Anchors_MC  rmse_LP_final_Anchors;
+
