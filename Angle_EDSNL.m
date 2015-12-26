@@ -6,10 +6,8 @@ function [ angle_temp ] = Angle_EDSNL( Node_All,Microphone_Distance,Point_Step,X
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 angle_temp = zeros(Node_All,1);    
 for i =1:Node_All 
-    
     flag=ones((Microphone_Distance/Point_Step+1)^2,1);%标记
-    for j = 1 : Acoustic_Number  
-        
+    for j = 1 : Acoustic_Number         
         %%%第 i 个节点的中心点坐标
         x0 =  Xnode_All(i,1);
         y0  = Xnode_All(i,2);
@@ -59,8 +57,7 @@ for i =1:Node_All
     sum_x=0;
     sum_y=0;
     totalcounnt=0;
-    k=1;
-    
+    k=1;   
       for temp_x=x0-Microphone_Distance/2:Point_Step:x0+Microphone_Distance/2
            for temp_y=y0-Microphone_Distance/2:Point_Step:y0+Microphone_Distance/2
                
@@ -75,9 +72,7 @@ for i =1:Node_All
             k =k+1;
            end
      end
-        temp_sum=[sum_x/totalcounnt sum_y/totalcounnt];    
-        
-        
+        temp_sum=[sum_x/totalcounnt sum_y/totalcounnt];           
         k = ( temp_sum(1,2) - y0)/( temp_sum(1,1) - x0);
 %         tan(deg2rad(Microphone_Cita(i)))
         temp = fix(rad2deg(atan(k)));
