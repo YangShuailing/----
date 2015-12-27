@@ -168,11 +168,11 @@ for i = 1: Node_Number
             for temp_i = 1 : box(i).count %% 发声的区域
                      X_temp = [box(i).x(temp)  box(i).y(temp)];
                      temp_flag(temp) = calcul_flag(X_temp, Xl1, Xl2); %%% 真实 0 、 1 信息
-                     for temp_l = 1 : box(l).count %%利用普通节点修正
-                         XL_temp = [box(l).x(temp)  box(l).y(temp)];%% L节点区域里的离散点
+                     for temp_l = 1 : box(l).count %%利于普通节点修正
                          for t = 1:box(l).count_angle(temp) %% box(l).count_angle(temp) <= 360
-                             XL_ang = [box(l).a_x(temp,t) box(l).a_y(temp,t)]; %% 麦克风 1 所在的位置  
-                             flag_temp_angle = calcul_flag(X_temp, XL_ang,XL_temp );    
+                             X_ang = [box(i).a_x(temp,t) box(i).a_y(temp,t)]; %% 麦克风 1 所在的位置  
+            %                    plot(box(i).a_x(temp,t),box(i).a_y(temp,t),'g.');
+                             flag_temp_angle = calcul_flag(X_temp, X_ang,X_temp);    
                              if (temp_flag(temp) == flag_il)
                                 box(i).flag(temp) = 1; %% 满足条件赋值为1
                              else
@@ -183,26 +183,9 @@ for i = 1: Node_Number
                      box = update(box,Node_Number); %%% update box      
             end
           end
-      end
- %%% 更新 i节点角度朝向
-    for l = 1 :Node_Number
-          if l ~= i
-             Xl1 =Microphone_1_Location(l,:);
-             Xl2 =Microphone_2_Location(l,:);
-             flag_il = calcul_flag( Xi,Xl1,Xl2 );%%%  
-             for temp_i = 1 : box(i).count %% 发声的区域    
-                 for t = 1:box(l).count_angle(temp) %% box(l).count_angle(temp) <= 360
-                     XL_ang = [box(l).a_x(temp,t) box(l).a_y(temp,t)]; %% 麦克风 1 所在的位置  
-                     flag_temp_angle = calcul_flag(X_temp, XL_ang,XL_temp );    
-                      for temp_l = 1 : box(l).count  
-                          
-                      end
-                     
-                             
-                 end
-             end
-          end
-    end
+       end
+
+    
     
     
     

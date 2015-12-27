@@ -1,4 +1,4 @@
-function [box ] = update_angle( box,Node_Number)
+function [ output_args ] = update_angle( box,Node_Number)
 %UPDATE_ANGLE 此处显示有关此函数的摘要
 %   此处显示详细说明
  %%% update
@@ -12,7 +12,7 @@ function [box ] = update_angle( box,Node_Number)
                  else      
                       box(i).a_x(temp,angle_index) = inf;%删除节点
                      box(i).a_y(temp,angle_index) = inf;
-                     box(i).angle_flag(temp,angle_index) = -1;
+                     (i).angle_flag(temp,angle_index) = -1;
                  end
             end
   end
