@@ -1,4 +1,4 @@
-function  Est_Normal = MSP_EDSNL(Num_Achohor,Num_Target,scan_time,anchor_node,X_rank,cita,p_band,normal_node)
+function  box_after_basic = Loc_EDSNL(Num_Achohor,Num_Target,scan_time,anchor_node,X_rank,cita,p_band,normal_node)
 %%% input:normal_node  for plot!
 plotflag=0;
 debug=1;
@@ -119,25 +119,27 @@ count_after_del;
  count_after_anchor =  count_after_del; 
 end  %% while 1
 
-  
-disp('Center of Gravity');
-%经过节点过滤后，求剩余节点的坐标平均值为最后的估计位置
-Est_MSP = [];
-tmp = [];
-tmp_1 = [];
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-for j = 1:Num_Target
- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
-      for i = 1: box_after_del(j).count
-          tmp = [tmp; box_after_del(j).x(i),box_after_del(j).y(i)]; 
-      end    
-    tmp_1 = [mean(tmp(:,1))  mean(tmp(:,2))];
-    Est_MSP = [Est_MSP; j tmp_1];
-    tmp = [];    
-end  %%for j = 1:Num_Target
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% disp('Center of Gravity');
+% %经过节点过滤后，求剩余节点的坐标平均值为最后的估计位置
+% Est_MSP = [];
+% tmp = [];
+% tmp_1 = [];
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% for j = 1:Num_Target
+%  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
+%       for i = 1: box_after_del(j).count
+%           tmp = [tmp; box_after_del(j).x(i),box_after_del(j).y(i)]; 
+%       end    
+%     tmp_1 = [mean(tmp(:,1))  mean(tmp(:,2))];
+%     Est_MSP = [Est_MSP; j tmp_1];
+%     tmp = [];    
+box_after_basic =  box_after_del;
+end   
 % 估计位置
 %Est_MSP = [目标节点序号 目标节点横坐标 目标节点纵坐标] 3列
-Est_Normal = [Est_MSP(:,2) Est_MSP(:,3)];
+% Est_Normal = [Est_MSP(:,2) Est_MSP(:,3)];
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -159,3 +161,4 @@ function order_normal_list=rank_only_normal_node(order_list,scan_time,Num_Achoho
     order_normal_list(k)=rank_tmp(k)-Num_Achohor;
         end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end

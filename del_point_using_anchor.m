@@ -3,11 +3,10 @@ plotflag=0;
 for sequence_index = 1:scan_time %% i:index of sequence 
   
   ss0 = X_rank(:,sequence_index);  
-  ss0';
+  ss0';%%% 第 i次 扫描的序列
   %%%%%%% 锚节点到直线距离 
   a=-tan(cita(sequence_index)*pi/180);
   b=1; 
-  
    for i=1:NUM_ANCHOR
       distance_anchor_line(i)=point2line(anchor_node(i,1),anchor_node(i,2),a,b,0); 
    end
